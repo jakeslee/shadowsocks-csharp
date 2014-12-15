@@ -14,11 +14,15 @@ namespace Shadowsocks.Controller
         // manipulates UI
         // interacts with low level logic
 
+        private Thread _ramThread;
+
         private Local local;
         private PACServer pacServer;
         private Configuration _config;
         private PolipoRunner polipoRunner;
         private bool stopped = false;
+
+        private bool _systemProxyIsDirty = false;
 
         public class PathEventArgs : EventArgs
         {
@@ -27,6 +31,7 @@ namespace Shadowsocks.Controller
 
         public event EventHandler ConfigChanged;
         public event EventHandler EnableStatusChanged;
+        public event EventHandler EnableGlobalChanged;
         public event EventHandler ShareOverLANStatusChanged;
         
         // when user clicked Edit PAC, and PAC file has already created
@@ -41,16 +46,24 @@ namespace Shadowsocks.Controller
             try
             {
                 local.Start();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+            try
+            {
                 pacServer = new PACServer();
                 pacServer.PACFileChanged += pacServer_PACFileChanged;
                 pacServer.Start(_config);
             }
             catch (Exception e)
             {
-                Console.WriteLine(e.Message);
+                Console.WriteLine(e);
             }
 
             UpdateSystemProxy();
+            StartReleasingMemory();
         }
 
         public Server GetCurrentServer()
@@ -78,6 +91,17 @@ namespace Shadowsocks.Controller
             if (EnableStatusChanged != null)
             {
                 EnableStatusChanged(this, new EventArgs());
+            }
+        }
+
+        public void ToggleGlobal(bool global)
+        {
+            _config.global = global;
+            UpdateSystemProxy();
+            SaveConfig(_config);
+            if (EnableGlobalChanged != null)
+            {
+                EnableGlobalChanged(this, new EventArgs());
             }
         }
 
@@ -154,6 +178,8 @@ namespace Shadowsocks.Controller
             {
                 ConfigChanged(this, new EventArgs());
             }
+
+            Util.Util.ReleaseMemory();
         }
 
 
@@ -161,17 +187,39 @@ namespace Shadowsocks.Controller
         {
             if (_config.enabled)
             {
-                SystemProxy.Enable();
+                SystemProxy.Enable(_config.global);
+                _systemProxyIsDirty = true;
             }
             else
             {
-                SystemProxy.Disable();
+                // only switch it off if we have switched it on
+                if (_systemProxyIsDirty)
+                {
+                    SystemProxy.Disable();
+                    _systemProxyIsDirty = false;
+                }
             }
         }
 
         private void pacServer_PACFileChanged(object sender, EventArgs e)
         {
             UpdateSystemProxy();
+        }
+
+        private void StartReleasingMemory()
+        {
+            _ramThread = new Thread(new ThreadStart(ReleaseMemory));
+            _ramThread.IsBackground = true;
+            _ramThread.Start();
+        }
+
+        private void ReleaseMemory()
+        {
+            while (true)
+            {
+                Util.Util.ReleaseMemory();
+                Thread.Sleep(30 * 1000);
+            }
         }
     }
 }

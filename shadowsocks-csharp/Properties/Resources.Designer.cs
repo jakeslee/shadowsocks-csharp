@@ -63,6 +63,16 @@ namespace Shadowsocks.Properties {
         /// <summary>
         ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
+        internal static byte[] libsodium_dll {
+            get {
+                object obj = ResourceManager.GetObject("libsodium_dll", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized resource of type System.Byte[].
+        /// </summary>
         internal static byte[] polarssl_dll {
             get {
                 object obj = ResourceManager.GetObject("polarssl_dll", resourceCulture);
@@ -77,7 +87,9 @@ namespace Shadowsocks.Properties {
         ///socksProxyType = socks5
         ///diskCacheRoot = &quot;&quot;
         ///localDocumentRoot = &quot;&quot;
-        ///.
+        ///
+        ///allowedPorts = 1-65535
+        ///tunnelAllowedPorts = 1-65535.
         /// </summary>
         internal static string polipo_config {
             get {

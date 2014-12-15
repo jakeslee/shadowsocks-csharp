@@ -66,15 +66,11 @@ namespace Shadowsocks.Controller
 
         public void AcceptCallback(IAsyncResult ar)
         {
+            Socket listener = (Socket)ar.AsyncState;
             try
             {
-                Socket listener = (Socket)ar.AsyncState;
                 Socket conn = listener.EndAccept(ar);
                 conn.SetSocketOption(SocketOptionLevel.Tcp, SocketOptionName.NoDelay, true);
-
-                listener.BeginAccept(
-                    new AsyncCallback(AcceptCallback),
-                    listener);
 
                 Handler handler = new Handler();
                 handler.connection = conn;
@@ -86,6 +82,19 @@ namespace Shadowsocks.Controller
             catch
             {
                 //Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                try
+                {
+                    listener.BeginAccept(
+                        new AsyncCallback(AcceptCallback),
+                        listener);
+                }
+                catch
+                {
+                    //Console.WriteLine(e.Message);
+                }
             }
         }
 
@@ -144,7 +153,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -176,7 +185,7 @@ namespace Shadowsocks.Controller
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e);
+                    Logging.LogUsefulException(e);
                 }
             }
             if (remote != null)
@@ -188,7 +197,7 @@ namespace Shadowsocks.Controller
                 }
                 catch (SocketException e)
                 {
-                    Console.WriteLine(e);
+                    Logging.LogUsefulException(e);
                 }
             }
             lock (encryptionLock)
@@ -218,7 +227,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -236,7 +245,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -269,7 +278,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -296,7 +305,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -324,7 +333,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -346,7 +355,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -384,7 +393,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -421,7 +430,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -440,7 +449,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
@@ -459,7 +468,7 @@ namespace Shadowsocks.Controller
             }
             catch (Exception e)
             {
-                Console.WriteLine(e);
+                Logging.LogUsefulException(e);
                 this.Close();
             }
         }
